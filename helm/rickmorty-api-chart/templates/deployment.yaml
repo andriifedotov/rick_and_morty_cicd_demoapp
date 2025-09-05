@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rickmorty-api.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "rickmorty-api.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "rickmorty-api.name" . }}
+    spec:
+      containers:
+        # Main app container
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rickmorty-api.fullname" . }}-secret
+                  key: SECRET_KEY
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rickmorty-api.fullname" . }}-secret
+                  key: DATABASE_URL
+            - name: CACHE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rickmorty-api.fullname" . }}-secret
+                  key: CACHE_URL
+            - name: CACHE_TTL
+              value: "{{ .Values.cache.ttl }}"
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+        # Fluent Bit sidecar
+        {{- if .Values.sidecar.enabled }}
+        - name: fluent-bit
+          image: "{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+          imagePullPolicy: {{ .Values.sidecar.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.sidecar.resources | nindent 12 }}
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log/app
+          command: ["/fluent-bit/bin/fluent-bit", "-i", "tail", "-p", "path=/var/log/app/*.log", "-p", "parser=json", "-o", "stdout"]
+        {{- end }}
+
+      volumes:
+        - name: varlog
+          emptyDir: {}

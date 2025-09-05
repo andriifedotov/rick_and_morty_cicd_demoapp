@@ -1,0 +1,52 @@
+replicaCount: 2
+
+image:
+  repository: andriifedotov/rickmorty-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+
+sidecar:
+  enabled: true
+  image:
+    repository: fluent/fluent-bit
+    tag: latest
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "100m"
+      memory: "100Mi"
+    requests:
+      cpu: "50m"
+      memory: "50Mi"
+
+cache:
+  ttl: 300  # seconds
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  host: localhost
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 50
+
+secrets:
+  secretKey: dev-secret
+  databaseUrl: postgres://rnm:rnm@postgres:5432/rnm
+  cacheUrl: redis://redis:6379/1

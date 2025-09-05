@@ -1,0 +1,120 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DOCKER_IMAGE: andriifedotov/rickmorty-api
+  HELM_CHART_PATH: helm/rickmorty-api-chart
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install flake8
+
+      - name: Lint code
+        run: flake8 .
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@v2
+        with:
+          scan-type: fs
+          severity: CRITICAL,HIGH
+
+  build-test:
+    runs-on: ubuntu-latest
+    needs: [lint, security-scan]
+    services:
+      docker:
+        image: docker:24-dind
+        options: --privileged
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest requests
+
+      - name: Build Docker image
+        run: docker build -t $DOCKER_IMAGE:ci-${{ github.sha }} .
+
+      - name: Run unit tests inside container
+        run: docker run --rm $DOCKER_IMAGE:ci-${{ github.sha }} pytest tests/unit
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up kind
+        uses: engineerd/setup-kind@v0.12.0
+        with:
+          version: v0.21.0
+
+      - name: Create kind cluster
+        run: kind create cluster --name rickmorty-ci
+
+      - name: Load Docker image into kind
+        run: kind load docker-image $DOCKER_IMAGE:ci-${{ github.sha }} --name rickmorty-ci
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.3
+            - name: Install NGINX Ingress Controller
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.15.1/deploy/static/provider/kind/deploy.yaml
+          # Wait for ingress controller to be ready
+          kubectl wait --namespace ingress-nginx --for=condition=available deployment/ingress-nginx-controller --timeout=120s
+
+      - name: Deploy app via Helm
+        run: |
+          helm upgrade --install rickmorty $HELM_CHART_PATH \
+            --set image.tag=ci-${{ github.sha }} \
+            --wait
+
+  push-image:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Push image
+        run: |
+          docker tag $DOCKER_IMAGE:ci-${{ github.sha }} $DOCKER_IMAGE:latest
+          docker push $DOCKER_IMAGE:latest
