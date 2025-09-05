@@ -62,6 +62,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./app
+          platforms: linux/amd64
           push: false
           tags: andriifedotov/rickmorty-api:ci-${{ github.sha }}
 
@@ -86,7 +87,7 @@ jobs:
         run: kind create cluster --name rickmorty-ci
 
       - name: Load Docker image into kind
-        run: kind load docker-image $DOCKER_IMAGE:ci-${{ github.sha }} --name rickmorty-ci --all-platforms
+        run: kind load docker-image $DOCKER_IMAGE:ci-${{ github.sha }} --name rickmorty-ci 
 
       - name: Install Helm
         uses: azure/setup-helm@v3
