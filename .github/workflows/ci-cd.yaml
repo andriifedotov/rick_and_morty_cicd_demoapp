@@ -57,14 +57,15 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install pytest requests
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./app
-          push: true
-          tags: ${{ env.DOCKER_IMAGE }}:ci-${{ github.sha }}
-
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker image for kind
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --load \
+            -t ${{ env.DOCKER_IMAGE }}:ci-${{ github.sha }} ./app
 
       - name: Run unit tests inside container
         working-directory: app
@@ -86,6 +87,9 @@ jobs:
       - name: Create kind cluster
         run: kind create cluster --name rickmorty-ci
 
+      - name: Load Docker image into kind
+        run: kind load docker-image $DOCKER_IMAGE:ci-${{ github.sha }} --name rickmorty-ci 
+
       - name: Install Helm
         uses: azure/setup-helm@v3
         with:
@@ -99,7 +103,6 @@ jobs:
       - name: Deploy app via Helm
         run: |
           helm upgrade --install rickmorty $HELM_CHART_PATH \
-            --set image.repository=${{ env.DOCKER_IMAGE }} \
             --set image.tag=ci-${{ github.sha }} \
             --wait
 
