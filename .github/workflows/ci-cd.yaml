@@ -67,7 +67,7 @@ jobs:
         with:
           context: ./app
           push: false
-          tags: $DOCKER_IMAGE:ci-${{ github.sha }}
+          tags: andriifedotov/rickmorty-api:ci-${{ github.sha }}
 
       - name: Run unit tests inside container
         working-directory: app
