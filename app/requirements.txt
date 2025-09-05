@@ -10,3 +10,4 @@ dj-database-url==2.2.0
 django-redis==5.4.0
 gunicorn==22.0.0
 prometheus_client==0.22.1
+pytest==8.4.2
