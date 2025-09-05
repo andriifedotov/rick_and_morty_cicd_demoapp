@@ -59,12 +59,8 @@ jobs:
           pip install pytest requests
 
       - name: Build Docker image locally
-        uses: docker/build-push-action@v4
-        with:
-          context: ./app
-          platforms: linux/amd64
-          push: false
-          tags: andriifedotov/rickmorty-api:ci-${{ github.sha }}
+        working-directory: ./app
+        run: docker build --platform linux/amd64 -t ${{ env.DOCKER_IMAGE }}:ci-${{ github.sha }} .
 
       - name: Run unit tests inside container
         working-directory: app
