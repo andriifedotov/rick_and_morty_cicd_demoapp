@@ -82,7 +82,6 @@ jobs:
         with:
           version: v0.24.0
           name: kind
-          wait: 300s
 
       - name: Create kind cluster
         run: kind create cluster --name rickmorty-ci
