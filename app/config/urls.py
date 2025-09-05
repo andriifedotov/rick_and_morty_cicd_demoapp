@@ -7,3 +7,4 @@ urlpatterns = [
     path("api/", include("characters.urls")),
     path("healthcheck", HealthCheckView.as_view(), name="healthcheck"),
 ]
+
