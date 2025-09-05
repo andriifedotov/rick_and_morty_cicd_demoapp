@@ -62,9 +62,12 @@ jobs:
           pip install -r requirements.txt
           pip install pytest requests
 
-      - name: Build Docker image
-        working-directory: app
-        run: docker build -t $DOCKER_IMAGE:ci-${{ github.sha }} .
+      - name: Build Docker image locally
+        uses: docker/build-push-action@v4
+        with:
+          context: ./app
+          push: false
+          tags: $DOCKER_IMAGE:ci-${{ github.sha }}
 
       - name: Run unit tests inside container
         working-directory: app
