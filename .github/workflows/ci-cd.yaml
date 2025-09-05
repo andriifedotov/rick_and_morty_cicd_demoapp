@@ -86,7 +86,7 @@ jobs:
         run: kind create cluster --name rickmorty-ci
 
       - name: Load Docker image into kind
-        run: kind load docker-image $DOCKER_IMAGE:ci-${{ github.sha }} --name rickmorty-ci
+        run: kind load docker-image $DOCKER_IMAGE:ci-${{ github.sha }} --name rickmorty-ci --all-platforms
 
       - name: Install Helm
         uses: azure/setup-helm@v3
