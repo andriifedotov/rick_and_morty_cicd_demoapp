@@ -7,21 +7,47 @@ A containerized **Rick & Morty API** application deployed using **Kubernetes**, 
 ## Architecture
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph CI["CI/CD Pipeline"]
-        A[Build Docker Image] --> B[Push to DockerHub]
-        B --> C[Helm Deploy]
+        A[Code Push/PR] --> B[Lint with flake8]
+        A --> C[Security Scan with Trivy]
+        
+        B --> D[Build & Test]
+        C --> D
+        
+        D --> E[Build Docker Image]
+        E --> F[Run Unit Tests in Container]
+        
+        F --> G[Deploy to Kind Cluster]
+        G --> H[Setup Kind Cluster]
+        H --> I[Load Docker Image to Kind]
+        I --> J[Install Nginx Ingress]
+        J --> K[Build Helm Dependencies]
+        K --> L[Deploy App with Helm]
+        L --> M[Wait for Deployment Ready]
+        M --> N[Port-forward Ingress]
+        N --> O[Run Integration Tests]
+        
+        O --> P[Push to DockerHub]
+        P --> Q[Tag as Latest]
     end
-    subgraph K8S["Kubernetes Cluster"]
+    
+    subgraph K8S["Kind Kubernetes Cluster"]
         subgraph Backend
-            D[PostgreSQL Database] --> E[Rick & Morty API]
-            F[Redis Cache] --> E
+            R[PostgreSQL Database] --> S[Rick & Morty API]
+            T[Redis Cache] --> S
         end
         subgraph Ingress
-            G[Nginx Ingress Controller] --> E
+            U[Nginx Ingress Controller] --> S
         end
     end
-    C --> K8S
+    
+    subgraph Registry["Docker Registry"]
+        V[DockerHub Image]
+    end
+    
+    L --> K8S
+    Q --> Registry
 ```
 
 ---
