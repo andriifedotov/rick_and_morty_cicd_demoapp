@@ -123,6 +123,14 @@ jobs:
             --for=condition=available deployment/nginx-ingress-nginx-controller \
             --timeout=120s
 
+      - name: Build Helm chart dependencies
+        working-directory: ${{ env.HELM_CHART_PATH }}
+        run: helm dependency build
+
+      - name: Wait for services to be ready
+        run: |
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql,app.kubernetes.io/instance=rickmorty --timeout=120s
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=redis,app.kubernetes.io/instance=rickmorty --timeout=120s
       - name: Deploy app via Helm
         run: |
           helm upgrade --install rickmorty $HELM_CHART_PATH \

@@ -1,2 +1,4 @@
 /infra/* 
 # infra for testing locally
+*.tgz
+*.lock

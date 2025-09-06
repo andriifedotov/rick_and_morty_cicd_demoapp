@@ -27,6 +27,12 @@ sidecar:
       cpu: "50m"
       memory: "50Mi"
 
+postgresql:
+  auth:
+    username: rnm
+    password: rnm
+    database: rnm
+
 cache:
   ttl: 300  # seconds
 
@@ -48,5 +54,10 @@ hpa:
 
 secrets:
   secretKey: dev-secret
-  databaseUrl: postgres://rnm:rnm@postgres:5432/rnm
-  cacheUrl: redis://redis:6379/1
+  databaseUrl: postgres://rnm:rnm@rickmorty-postgresql:5432/rnm
+  cacheUrl: redis://rickmorty-rickmorty-api-redis:6379/1
+
+redis:
+  host: 'rickmorty-rickmorty-api-redis'
+  port: 6379
+  enabled: true
