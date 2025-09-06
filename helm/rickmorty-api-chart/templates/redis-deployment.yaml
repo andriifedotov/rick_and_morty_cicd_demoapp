@@ -5,6 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/name: redis
     app.kubernetes.io/instance: {{ .Release.Name }}
+    app: {{ include "rickmorty-api.fullname" . }}-redis
 spec:
   replicas: 1
   selector:
