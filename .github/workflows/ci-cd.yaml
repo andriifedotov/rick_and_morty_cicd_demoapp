@@ -123,13 +123,6 @@ jobs:
             --for=condition=available deployment/nginx-ingress-nginx-controller \
             --timeout=120s
 
-          # Wait for the admission webhook service endpoint
-          kubectl wait --namespace ingress-nginx \
-            --for=condition=ready pod \
-            -l app.kubernetes.io/component=admission-webhook \
-            --timeout=120s
-
-
       - name: Deploy app via Helm
         run: |
           helm upgrade --install rickmorty $HELM_CHART_PATH \
