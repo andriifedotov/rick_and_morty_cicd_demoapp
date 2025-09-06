@@ -135,7 +135,7 @@ jobs:
 
       - name: Port-forward Ingress for integration tests
         run: |
-          kubectl port-forward --namespace ingress-nginx svc/ingress-nginx-controller 8080:80 &
+          kubectl port-forward --namespace ingress-nginx svc/nginx-ingress-nginx-controller 8080:80 &
           sleep 5
 
       - name: Run integration tests against API
