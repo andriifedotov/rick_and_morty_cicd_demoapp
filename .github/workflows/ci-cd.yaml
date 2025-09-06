@@ -113,8 +113,9 @@ jobs:
 
       - name: Install NGINX Ingress Controller
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.15.1/deploy/static/provider/kind/deploy.yaml
-          kubectl wait --namespace ingress-nginx --for=condition=available deployment/ingress-nginx-controller --timeout=120s
+          helm install nginx ingress-nginx/ingress-nginx \
+            --namespace ingress-nginx \
+            --create-namespace
 
       - name: Deploy app via Helm
         run: |
