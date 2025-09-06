@@ -117,16 +117,18 @@ jobs:
           helm install nginx ingress-nginx/ingress-nginx \
             --namespace ingress-nginx \
             --create-namespace
-          
+
+          # Wait for the controller pod
           kubectl wait --namespace ingress-nginx \
-            --for=condition=available deployment/ingress-nginx-controller \
+            --for=condition=available deployment/nginx-ingress-nginx-controller \
             --timeout=120s
-          
+
           # Wait for the admission webhook service endpoint
           kubectl wait --namespace ingress-nginx \
             --for=condition=ready pod \
             -l app.kubernetes.io/component=admission-webhook \
             --timeout=120s
+
 
       - name: Deploy app via Helm
         run: |
