@@ -8,11 +8,11 @@ A containerized **Rick & Morty API** application deployed using **Kubernetes**, 
 
 ```mermaid
 flowchart LR
-    subgraph "CI/CD Pipeline"
+    subgraph CI["CI/CD Pipeline"]
         A[Build Docker Image] --> B[Push to DockerHub]
         B --> C[Helm Deploy]
     end
-    subgraph "Kubernetes Cluster"
+    subgraph K8S["Kubernetes Cluster"]
         subgraph Backend
             D[PostgreSQL Database] --> E[Rick & Morty API]
             F[Redis Cache] --> E
@@ -21,7 +21,7 @@ flowchart LR
             G[Nginx Ingress Controller] --> E
         end
     end
-    C --> "Kubernetes Cluster"
+    C --> K8S
 ```
 
 ---
