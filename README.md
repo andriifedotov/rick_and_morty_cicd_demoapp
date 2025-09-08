@@ -326,7 +326,6 @@ docker-compose up -d postgres redis
 3. **Run migrations:**
 ```bash
 python manage.py migrate
-python manage.py loaddata fixtures/characters.json
 ```
 
 4. **Start development server:**
