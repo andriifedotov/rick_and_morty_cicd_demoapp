@@ -96,12 +96,7 @@ helm repo update
 ```bash
 helm install ingress-nginx ingress-nginx/ingress-nginx \
     --namespace ingress-nginx \
-    --create-namespace \
-    --set controller.service.type=NodePort \
-    --set controller.hostPort.enabled=true \
-    --set controller.nodeSelector."kubernetes\.io/os"=linux \
-    --set controller.ingressClassResource.default=true \
-    --wait --timeout=300s
+    --create-namespace
 ```
 
 ### 4. Build Helm Dependencies
