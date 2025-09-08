@@ -10,6 +10,8 @@ from rest_framework.settings import api_settings
 from rest_framework.filters import OrderingFilter
 from .models import Character
 from .serializers import CharacterSerializer
+from rest_framework.views import exception_handler
+
 
 # ---- API Views ----
 
@@ -78,8 +80,10 @@ class HealthCheckView(APIView):
 # ---- Exception handler to surface nice 400/429/503 ----
 
 def custom_exception_handler(exc, context):
-    response = api_settings.DEFAULT_EXCEPTION_HANDLER(exc, context)
+    # First, call DRF's default exception handler
+    response = exception_handler(exc, context)
 
+    # Handle throttling errors with a custom response
     if isinstance(exc, Throttled):
         detail = {
             "detail": "Request was throttled. Reduce request rate.",
@@ -87,9 +91,12 @@ def custom_exception_handler(exc, context):
         }
         return Response(detail, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
-    # Keep DRF's default if present
+    # If DRF produced a response, return it
     if response is not None:
         return response
 
-    # Fallback to 503 on unexpected errors
-    return Response({"detail": "Service temporarily unavailable."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    # Fallback for unexpected errors
+    return Response(
+        {"detail": "Service temporarily unavailable."},
+        status=status.HTTP_503_SERVICE_UNAVAILABLE,
+    )

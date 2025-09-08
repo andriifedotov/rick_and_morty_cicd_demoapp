@@ -7,10 +7,12 @@ class TestCharactersAPI:
         self.client = APIClient()
 
     def test_characters_list_ok(self):
-        """GET /characters/ should return 200 OK and JSON"""
         response = self.client.get("/api/characters/")
         assert response.status_code == 200
-        assert isinstance(response.json(), list)
+        data = response.json()
+        assert isinstance(data, dict)
+        assert "results" in data
+        assert isinstance(data["results"], list)
 
     def test_character_not_found(self):
         """GET /characters/999999 should return 404"""
