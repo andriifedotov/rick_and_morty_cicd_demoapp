@@ -1,0 +1,66 @@
+version: '3.9'
+
+services:
+
+  postgres:
+
+    image: postgres:16-alpine
+
+    environment:
+
+      POSTGRES_DB: rnm
+
+      POSTGRES_USER: rnm
+
+      POSTGRES_PASSWORD: rnm
+
+    ports:
+
+      - "5432:5432"
+
+    volumes:
+
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+
+    image: redis:7-alpine
+
+    ports:
+
+      - "6379:6379"
+
+  web:
+
+    build: .
+
+    command: sh -c "python manage.py migrate && python manage.py sync_rick_and_morty && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+
+    environment:
+
+      DJANGO_SETTINGS_MODULE: config.settings
+
+      SECRET_KEY: dev-secret
+
+      DEBUG: "1"
+
+      DATABASE_URL: postgres://rnm:rnm@postgres:5432/rnm
+
+      CACHE_URL: redis://redis:6379/1
+
+      ALLOWED_HOSTS: "*"
+
+    ports:
+
+      - "8000:8000"
+
+    depends_on:
+
+      - postgres
+
+      - redis
+
+volumes:
+
+  pgdata:
+

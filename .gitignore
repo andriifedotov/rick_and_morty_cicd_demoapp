@@ -2,3 +2,4 @@
 # infra for testing locally
 *.tgz
 *.lock
+app/venv/*
