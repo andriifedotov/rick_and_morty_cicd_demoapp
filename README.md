@@ -320,17 +320,7 @@ pip install -r requirements.txt
 
 2. **Run local services:**
 ```bash
-docker-compose up -d postgres redis
-```
-
-3. **Run migrations:**
-```bash
-python manage.py migrate
-```
-
-4. **Start development server:**
-```bash
-python manage.py runserver
+docker-compose up
 ```
 
 ### Building Docker Image
